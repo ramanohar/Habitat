@@ -10,9 +10,20 @@ var xmlpoke = require("xmlpoke");
 var config = require("./gulpfile.js").config;
 var unicorn = require("./scripts/unicorn.js");
 var websiteRootBackup = config.websiteRoot;
-
+var zip = require("gulp-zip");
+var gulp = require('gulp');
+var replace = require('gulp-replace');
+var args = require('yargs').argv;
+var fileName = process.argv[4];
+var ID = process.argv[6];
+var Title = process.argv[8];
+var Version = process.argv[10];
+var Author = process.argv[12];
+var Notes = process.argv[14];
 
 gulp.task("CI-Publish", function (callback) {
+console.log("path resolve for temp:" + path.resolve("./temp"));
+console.log("config webroot:" + config.webroot);
     config.websiteRoot = path.resolve("./temp");
     config.buildConfiguration = "Release";
     fs.mkdirSync(config.websiteRoot);
@@ -28,8 +39,8 @@ gulp.task("CI-Prepare-Package-Files", function (callback) {
       config.websiteRoot + "\\bin\\{Sitecore,Lucene,Newtonsoft,System,Microsoft.Web.Infrastructure}*dll",
       config.websiteRoot + "\\compilerconfig.json.defaults",
       config.websiteRoot + "\\packages.config",
-      config.websiteRoot + "\\App_Config\\Include\\{Feature,Foundation,Project}\\*Serialization.config",
-      config.websiteRoot + "\\App_Config\\Include\\{Feature,Foundation,Project}\\z.*DevSettings.config",
+      "!" + config.websiteRoot + "\\App_Config\\Include\\{Feature,Foundation,Project}\\*Serialization.config",
+      "!" + config.websiteRoot + "\\App_Config\\Include\\{Feature,Foundation,Project}\\z.*DevSettings.config",
       "!" + config.websiteRoot + "\\bin\\Sitecore.Support*dll",
       "!" + config.websiteRoot + "\\bin\\Sitecore.{Feature,Foundation,Habitat,Demo,Common}*dll"
     ];
@@ -59,14 +70,10 @@ gulp.task("CI-Enumerate-Files", function () {
 
 gulp.task("CI-Enumerate-Items", function () {
     var itemPaths = [];
-    var allowedPatterns = [
-      "./src/**/serialization/**/*.yml",
-      "!./src/**/serialization/*.Roles/**/*.yml",
-      "!./src/**/serialization/*.Users/**/*.yml"
-    ];
-    return gulp.src(allowedPatterns)
+	console.log(path.resolve("./src/**/serialization/**/*.yml"));
+    return gulp.src("./src/**/serialization/**/*.yml")
         .pipe(foreach(function (stream, file) {
-        console.log(file);
+			console.log(file.path);
             var itemPath = unicorn.getFullItemPath(file);
             itemPaths.push(itemPath);
             return stream;
@@ -81,10 +88,8 @@ gulp.task("CI-Enumerate-Items", function () {
 
 gulp.task("CI-Enumerate-Users", function () {
     var users = [];
-
-    return gulp.src("./src/**/serialization/*.Users/**/*.yml")
+    return gulp.src("./src/**/users/**/*.user")
         .pipe(foreach(function (stream, file) {
-          console.log(file);
             var fileContent = file.contents.toString();
             var userName = unicorn.getUserPath(file);
             users.push(userName);
@@ -100,12 +105,10 @@ gulp.task("CI-Enumerate-Users", function () {
 
 gulp.task("CI-Enumerate-Roles", function () {
     var roles = [];
-
-    return gulp.src("./src/**/serialization/*.Roles/**/*.yml")
+    return gulp.src("./src/**/roles/**/*.role")
         .pipe(foreach(function (stream, file) {
-          console.log(file);
             var fileContent = file.contents.toString();
-            var roleName = unicorn.getRolePath(file);            
+            var roleName = unicorn.getRolePath(file);
             roles.push(roleName);
             return stream;
         })).pipe(gutil.buffer(function () {
@@ -117,11 +120,41 @@ gulp.task("CI-Enumerate-Roles", function () {
         }));
 });
 
+gulp.task("CI-Copy-Unicorn-Items", function () {
+    var itemPaths = [];
+	console.log(path.resolve("./src/**/serialization/**/*.yml"));
+    return gulp.src("./src/**/serialization/**/*.yml").pipe(gulp.dest(path.resolve('./temp/unicorn')));
+});
+
+gulp.task("CI-Copy-Unicorn-Users", function () {
+    var itemPaths = [];
+	console.log(path.resolve("./src/**/users/**/*.yml"));
+    return gulp.src("./src/**/users/**/*.yml").pipe(gulp.dest(path.resolve('./temp/unicorn')));
+});
+
+gulp.task("CI-Copy-Unicorn-Roles", function () {
+    var itemPaths = [];
+	console.log(path.resolve("./src/**/roles/**/*.*"));
+    return gulp.src("./src/**/roles/**/*.*").pipe(gulp.dest(path.resolve('./temp/unicorn')));
+});
+
 gulp.task("CI-Clean", function (callback) {
     rimrafDir.sync(path.resolve("./temp"));
     callback();
 });
-
+   
+gulp.task("Nuspec-File-Replace", function() {
+	console.log(ID);
+	//console.log(fileName);
+    return gulp.src("./"+ fileName)
+		.pipe(replace("pck-id", ID))
+		.pipe(replace("pck-title", Title))
+		.pipe(replace("pck-version", Version))
+		.pipe(replace("pck-authors", Author))
+		.pipe(replace("pck-description", Notes))
+		.pipe(gulp.dest('./temp/'));
+});
+        
 gulp.task("CI-Do-magic", function (callback) {
     runSequence(
         "CI-Clean",
@@ -131,6 +164,33 @@ gulp.task("CI-Do-magic", function (callback) {
         "CI-Enumerate-Items",
         "CI-Enumerate-Users",
         "CI-Enumerate-Roles",
-        "CI-Clean",
-        callback);
+		"CI-Copy-Unicorn-Items",
+		"CI-Copy-Unicorn-Users",
+		"CI-Copy-Unicorn-Roles",
+		//"CI-Clean",
+	callback);
+});
+
+// unused implementations
+/*
+gulp.task('nuget-download', function(done) {
+    if(fs.existsSync('nuget.exe')) {
+        return done();
+    }
+    request.get('http://nuget.org/nuget.exe')
+        .pipe(fs.createWriteStream('nuget.exe'))
+        .on('close', done);
+});
+gulp.task('nuget-pack', function() {
+  var nugetPath = './nuget.exe';
+  return gulp.src('habitatsite.nuspec')
+    .pipe(nuget.pack({ nuget: nugetPath, version: "1.0.0" }))
+    .pipe(gulp.dest('habitatsite.1.0.0.nupkg'));
+});
+*/
+gulp.task("CI-Enumerate-Roles-pkg", function () {
+    var roles = [];
+    return gulp.src("./src/**/roles/**/*.role")
+        .pipe(zip("pkg.zip"))
+		.pipe(gulp.dest("./dist"));
 });
