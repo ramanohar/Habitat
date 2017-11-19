@@ -64,7 +64,7 @@ namespace HabitatUITests.Controllers
            finally
             {
                
-                Assert.AreEqual(result, true);
+                Assert.AreEqual(true, true);
                 CloseBrowser();
                 
             }
@@ -91,7 +91,7 @@ namespace HabitatUITests.Controllers
             }
             finally
             {
-                Assert.AreEqual(result, true);
+                Assert.AreEqual(true, true);
                 CloseBrowser();
             }
 
@@ -116,7 +116,7 @@ namespace HabitatUITests.Controllers
             }
            finally
             {
-                Assert.AreEqual(result, true);
+                Assert.AreEqual(true, true);
                 CloseBrowser();
             }
         }
