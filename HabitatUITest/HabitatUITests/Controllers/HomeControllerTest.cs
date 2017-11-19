@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
@@ -14,7 +14,7 @@ namespace HabitatUITests.Controllers
     [TestClass]
     public class HomePageUITests
     {
-        public Eyes eyes = new Eyes();
+       // public Eyes eyes = new Eyes();
         //System.setProperty("webdriver.firefox.marionette","G:\\Selenium\\Firefox driver\\geckodriver.exe");
         private IWebDriver webDriver;
 
@@ -31,7 +31,7 @@ namespace HabitatUITests.Controllers
             }
 
             
-            eyes.ApiKey = "l64hbuXc2lxij1vHN0emmKavNATg9Vi7OEuepVC106x48110";
+           // eyes.ApiKey = "l64hbuXc2lxij1vHN0emmKavNATg9Vi7OEuepVC106x48110";
         }
         //    bool exists = System.IO.Directory.Exists(ConfigurationHelper.FolderPicture);
 
@@ -52,7 +52,7 @@ namespace HabitatUITests.Controllers
                 //eyes.Open(webDriver, "Habitat", "UC001_LoadHomePage");
                 //eyes.CheckWindow("Test1");
 
-                result = (webDriver.Title.ToString().Contains("Google"));
+                result = (webDriver.Title.ToString().Contains("Habitat Sitecore"));
 
                 //eyes.Close();
             }
@@ -63,29 +63,30 @@ namespace HabitatUITests.Controllers
             }
            finally
             {
+               
                 Assert.AreEqual(result, true);
                 CloseBrowser();
+                
             }
 
         }
 
 
         [TestMethod]
-        public void UC002_HomePageVerifyCarouselCount()
+        public void UC002_LoadRegisterPage()
         {
-            webDriver.Navigate().GoToUrl(ConfigurationHelper.SiteUrl);
+            webDriver.Navigate().GoToUrl(ConfigurationHelper.RegisterUrl);
            
             bool result = true;
             try
             {
                 //eyes.Open(webDriver, "Habitat", "UC002_HomePageVerifyCarouselCount");
-               // eyes.CheckWindow("Test2");
-                result = (webDriver.FindElement(By.ClassName("carousel-indicators")).FindElements(By.TagName("li")).Count == 4);
+                // eyes.CheckWindow("Test2");
+                result = (webDriver.Title.ToString().Contains("Register"));
                 //eyes.Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 result = false;
             }
             finally
@@ -111,7 +112,6 @@ namespace HabitatUITests.Controllers
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 result = false;
             }
            finally
