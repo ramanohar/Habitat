@@ -58,6 +58,7 @@ namespace HabitatUITests.Controllers
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 result = false;
             }
            finally
@@ -84,6 +85,7 @@ namespace HabitatUITests.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 result = false;
             }
             finally
@@ -109,6 +111,7 @@ namespace HabitatUITests.Controllers
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 result = false;
             }
            finally
