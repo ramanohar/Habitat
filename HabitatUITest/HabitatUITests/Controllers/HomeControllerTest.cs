@@ -76,7 +76,7 @@ namespace HabitatUITests.Controllers
         public void UC002_LoadRegisterPage()
         {
             webDriver.Navigate().GoToUrl(ConfigurationHelper.RegisterUrl);
-           
+
             bool result = true;
             try
             {
@@ -94,7 +94,7 @@ namespace HabitatUITests.Controllers
                 Assert.AreEqual(result, true);
                 CloseBrowser();
             }
-           
+
         }
 
         [TestMethod]
@@ -131,7 +131,7 @@ namespace HabitatUITests.Controllers
         {
             webDriver.Quit();
             //eyes.AbortIfNotClosed();
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
         }
     }
 }
